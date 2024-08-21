@@ -1,0 +1,90 @@
+# implementation of card game - Memory
+
+import simplegui
+import random
+import math
+
+#card_list=[[centerposition],value,exposed]
+card_list=[]
+exposed_list=[]
+compare_card=[]
+turns=0
+# helper function to initialize globals
+def new_game():
+    #data struct
+    global card_list
+    global exposed_list
+    global turns
+    global compare_card
+    turns=0;
+    label.set_text("Turns = "+str(turns))
+    card_list=[]
+    exposed_list=[]
+    compare_card=[]
+    i=0
+    for card in create_card_list():
+        card_list.append((i*50,50,card))
+        exposed_list.append(0)
+        i+=1
+
+def create_card_list():
+    array_list=[1,2,3,4,5,6,7,8]
+    result_list=[]
+    result_list.extend(array_list)
+    result_list.extend(array_list)
+    random.shuffle(result_list)
+    return result_list
+     
+# define event handlers
+def mouseclick(pos):
+    # add game state logic here
+    global compare_card
+    global turns
+    for card in card_list:
+        if(pos[0]<card[0]+50 and pos[0]>card[0]):
+            if(exposed_list[card_list.index(card)]==0):
+                exposed_list[card_list.index(card)]=1
+            if(exposed_list[card_list.index(card)]==1 and (card not in compare_card)):
+                compare_card.append(card)
+    if(len(compare_card)==2):
+        turns+=1
+    if(len(compare_card)>2):
+        
+        if(compare_card[0][2]==compare_card[1][2]):
+            exposed_list[card_list.index(compare_card[0])]=2
+            exposed_list[card_list.index(compare_card[1])]=2
+            compare_card.pop(0)
+            compare_card.pop(0)
+        else:
+            exposed_list[card_list.index(compare_card[0])]=0
+            exposed_list[card_list.index(compare_card[1])]=0
+            compare_card.pop(0)
+            compare_card.pop(0)
+    label.set_text("Turns = "+str(turns))
+            
+                        
+# cards are logically 50x100 pixels in size    
+def draw(canvas):
+    #draw on canvas
+    for card in card_list:
+        if(exposed_list[card_list.index(card)]==1 or exposed_list[card_list.index(card)]==2):
+            canvas.draw_polygon([[card[0], 0],[card[0]+0, 100], [card[0]+50, 100],[card[0]+50, 0]], 2, 'Yellow')
+            canvas.draw_text(str(card[2]),(card[0]+10,card[1]),40,"White")
+        else: 
+            canvas.draw_polygon([[card[0], 0],[card[0]+0, 100], [card[0]+50, 100],[card[0]+50, 0]], 1, 'Yellow', "Orange")
+    
+
+# create frame and add a button and labels
+frame = simplegui.create_frame("Memory", 800, 100)
+frame.add_button("Reset", new_game)
+label = frame.add_label("Turns = "+str(turns))
+
+# register event handlers
+frame.set_mouseclick_handler(mouseclick)
+frame.set_draw_handler(draw)
+
+# get things rolling
+new_game()
+frame.start()
+
+# Always remember to review the grading rubric
